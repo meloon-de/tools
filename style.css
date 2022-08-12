@@ -91,7 +91,7 @@ footer {
 	color: #f1f5f6;
 }
 
-#tester {
+div {
 	display: grid;
 	grid-template-columns: repeat(3, 1fr);
 	grid-auto-rows: 100px;

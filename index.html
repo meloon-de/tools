@@ -13,7 +13,8 @@
 <body>
    <section>
        <h1>Meloon Tools</h1>
-       <div id="tester" style="width:600px;height:250px;"></div>
+       <div id="tester" style="width:600px;height:250px"></div>
+       <div id="tester2" style="width:1200px;height:600px;"></div>
    </section>
    <script>
         TESTER = document.getElementById('tester');
@@ -21,26 +22,58 @@
         x: [1, 2, 3, 4, 5],
         y: [1, 2, 4, 8, 16] }], {
         margin: { t: 0 } } );
+       
+        var x = [];
+        var y = [];
+        fetch('https://raw.githubusercontent.com/meloon-de/tools/main/raman/2022-07-15/G-P-3s_D1_pos1.txt')
+        .then(response => response.text())
+        // outputs the content of the text file and splits columns to x & y
+        .then(text => {
+            var lines = text.split('\n')
+            //console.log("text")
+            //console.log(text)
+            //console.log("lines")
+            //console.log(lines)
+            for(var line = 0; line < lines.length; line++){
+                var lin = lines[line].split('\t');
+                x.push(lin[0]);
+                y.push(lin[1]);
+            }
+            console.log(x);
+            console.log(y);
 
-        var xArray = [50,60,70,80,90,100,110,120,130,140,150];
-        var yArray = [7,8,8,9,9,9,10,11,14,14,15];
+            var xn = [];
+            var yn = [];
 
-        // Define Data
-        var data = [{
-        x: xArray,
-        y: yArray,
-        mode:"markers",
-        type:"scatter"
-        }];
+            x.forEach(str => {
+                xn.push(Number(str));
+            })
+            y.forEach(str => {
+                yn.push(Number(str));
+            })
+            console.log(xn);
+            console.log(yn);
 
-        // Define Layout
-        var layout = {
-        xaxis: {range: [40, 160], title: "Square Meters"},
-        yaxis: {range: [5, 16], title: "Price in Millions"},
-        title: "House Prices vs. Size"
-        };
+            // Define Data
+            var data = [{
+            x: xn,
+            y: yn,
+            mode:"markers",
+            type:"scatter"
+            }];
 
-        Plotly.newPlot("myPlot", data, layout);
+            // Define Layout
+            var layout = {
+            autosize:true,
+            //yaxis: {range: [50, 100], title: "Intensity (counts)"},
+            xaxis: {range: [1000, 3500], title: "Raman Shift (cm$^{-1}$)"},
+            yaxis: {title: "Intensity (counts)"},
+            title: "Raman Spectra"
+            };
+
+            TESTER2 = document.getElementById('tester2');
+            Plotly.newPlot(TESTER2, data, layout);
+        })
     </script>
 </body>
 </html>
