@@ -8,39 +8,19 @@
           href="https://fonts.googleapis.com/css?family=Poppins">
     <title>Meloon Tools</title>
     <link rel="stylesheet" href="style.css">
-    <script src="https://cdn.plot.ly/plotly-2.14.0.min.js"></script>
+    <script src="node_modules\plotly.js-dist\plotly.js"></script>
+    <script src="node_modules\chart.js\dist\chart.js"></script>
+    <script src="main.js"></script>
 </head>
 <body>
    <section>
-       <h1>Meloon Tools</h1>
-       <div id="tester" style="width:600px;height:250px;"></div>
+        <h1>Meloon Tools</h1>
+        <div id="raman" style="width:1200px;height:600px;"></div>
+        <canvas id="myChart" width="1000" height="600"></canvas>
+        <div id="gas" style="width:1200px;height:600px;">
+            <h2>"Discharge temperature of compressed gas"</h2>
+            <img src="assets\adiabatic_compression_discharge_temperature.png"
+        </div>
    </section>
-   <script>
-        TESTER = document.getElementById('tester');
-        Plotly.newPlot( TESTER, [{
-        x: [1, 2, 3, 4, 5],
-        y: [1, 2, 4, 8, 16] }], {
-        margin: { t: 0 } } );
-
-        var xArray = [50,60,70,80,90,100,110,120,130,140,150];
-        var yArray = [7,8,8,9,9,9,10,11,14,14,15];
-
-        // Define Data
-        var data = [{
-        x: xArray,
-        y: yArray,
-        mode:"markers",
-        type:"scatter"
-        }];
-
-        // Define Layout
-        var layout = {
-        xaxis: {range: [40, 160], title: "Square Meters"},
-        yaxis: {range: [5, 16], title: "Price in Millions"},
-        title: "House Prices vs. Size"
-        };
-
-        Plotly.newPlot("myPlot", data, layout);
-    </script>
 </body>
 </html>
