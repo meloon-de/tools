@@ -6,17 +6,15 @@ function usePlotly(xn, yn){
   //References
   //https://plotly.com/javascript/shapes/
 
-  //TODO
-  //
+  //Getting max value for height of highlights
+  var max = Math.max(...yn);
 
   // Define Data
   var data = [{
     x: xn,
     y: yn,
-    type:"scatter"
+    type:"scatter",
   }];
-
-  var max = Math.max(...yn);
 
   // Define Layout
   var layout = {
@@ -63,6 +61,32 @@ function usePlotly(xn, yn){
                 'width': 0,
             }
         }
+    ],
+    annotations: [
+    {
+      x: 1350,
+      y: 5,
+      xref: 'x',
+      yref: 'y',
+      text: 'D',
+      showarrow: false,
+    },
+    {
+      x: 1600,
+      y: 5,
+      xref: 'x',
+      yref: 'y',
+      text: 'G',
+      showarrow: false,
+    },
+    {
+      x: 2775,
+      y: 5,
+      xref: 'x',
+      yref: 'y',
+      text: '2D',
+      showarrow: false,
+    },
     ],
     autosize:true,
     //yaxis: {range: [50, 100], title: "Intensity (counts)"},
