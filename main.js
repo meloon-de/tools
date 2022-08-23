@@ -1,17 +1,3 @@
-// Octokit.js
-// https://github.com/octokit/core.js#readme
-/*
-const octokit = new Octokit({
-  //auth: 'personal-access-token123'
-});
-/*
-await octokit.request('GET /repos/{owner}/{repo}/contents/{path}', {
-  owner: 'meloon-de',
-  repo: 'tools',
-  path: 'tools/raman/'
-});
-*/
-
 var x = [];
 var y = [];
 
@@ -114,14 +100,8 @@ function usePlotly(xn, yn){
   console.log("plotly plot success");
 }
 
-//fetch('https://api.github.com/repos/meloon-de/tools/main/raman?recursive=1"')
-//.then(response => response.text())
-//.then(text => {
- //   console.log(text);
-//});
-
 // fetchs txt file, splts per line and splits columns to x & y
-fetch('https://raw.githubusercontent.com/meloon-de/tools/main/raman/2022-07-15/G-P-3s_D1_pos1.txt')
+fetch('https://raw.githubusercontent.com/meloon-de/tools/main/raman/2022-08-22/raman\2022-08-22\G-1sec-PL_low-E_pos1 on Si.txt')
 .then(response => response.text())
 .then(text => {
   var lines = text.split('\n');
