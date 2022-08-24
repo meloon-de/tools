@@ -1,14 +1,11 @@
 var gHubLink = 'https://raw.githubusercontent.com/meloon-de/tools/main/raman/2022-07-15/G-P-3s_D1_pos1.txt';
-var driveLink = '10gJIOBaI6qKrfv9XaaOCygIgSTif-RkV';
-var ramanLink = '1wceN8W0tMZKIcuzq2f7Ij4xPaluEp8EV';
-
 var tempData = [];
 var max = 0;
 
-// defaultPlotly();
+defaultPlotly()
 
 async function handleSearchRamanClick(){
-  res = await searchFolder(ramanLink);
+  res = await searchFolder(RAMANLINK);
   generateSelectFromResult(res);
   console.log("Search directory under raman and send to select - success");
 }
@@ -81,21 +78,50 @@ function generateSelectFromResult(res){
   }
 }
 
-function defaultPlotly(){
+async function defaultPlotly(){
   // Define Data
-  var trace1 = {
-    x: [1, 2, 3, 4],
-    y: [10, 15, 13, 17],
-    type: 'scatter'
+
+  console.log("defaultPlotly started");
+  text = await useGithubFetch(gHubLink);
+  console.log("successful useGithubFetch");
+  var x = [];
+  var y = [];
+  var lines = text.split('\n');
+  for(var line = 0; line < lines.length; line++){
+      var lin = lines[line].split('\t');
+      //filters out NaN of file which gives error to Math.max
+      if (isNaN(lin[1])) {
+        continue;
+      }
+      if (isNaN(lin[0])) {
+        continue;
+      }
+      x.push(lin[0]);
+      y.push(lin[1]);
+  }
+  console.log("file parsing - success");
+
+  var xn = [];
+  var yn = [];
+
+  x.forEach(str => {
+      xn.push(Number(str));
+  });
+  y.forEach(str => {
+      yn.push(Number(str));
+  });
+  console.log("convert to number - success");
+  console.log(xn);
+  console.log(yn);
+
+  var sample = {
+    "x": xn,
+    "y": yn,
+    "type": "scatter",
+    "name": "sample",
   };
 
-  var trace2 = {
-    x: [1, 2, 3, 4],
-    y: [16, 5, 11, 9],
-    type: 'scatter'
-  };
-
-  var data = [trace1, trace2];
+  var data = [sample];
 
   var layout = {
     autosize:true,
@@ -107,8 +133,6 @@ function defaultPlotly(){
   Plotly.newPlot(RAMANDIV, data, layout);
   console.log("plotly plot - success");
 }
-
-var max;
 
 function usePlotly(objArray){
 //generate plots from object that contains name, xy arrays
@@ -212,7 +236,8 @@ function usePlotly(objArray){
 }
 
 async function downloadAndParse(objArray, fileID, index){
-//also searches for max
+//downloads and parses Gdrive files using an array of objects, ID and index of 
+//current object
 
     // text = await useGithubFetch(gHubLink);
     text = await downloadFile(fileID);
@@ -354,9 +379,6 @@ async function searchFile(fileID) {
 /* exported handleAuthClick */
 /* exported handleSignoutClick */
 
-const CLIENT_ID = '1022701359156-t372td2fbje06vbla2ejs60t68sdvhn7.apps.googleusercontent.com';
-const API_KEY = 'AIzaSyDPnLit3eqBVMxMLxH3HYcXVKFdnO8MD0A';
-
 // Discovery doc URL for APIs used by the quickstart
 const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest';
 
@@ -477,3 +499,11 @@ async function listFiles() {
       'Files:\n');
   document.getElementById('content').innerText = output;
 }
+
+// window.onload = function(){
+  // defaultPlotly();
+// };
+
+// document.addEventListener("DOMContentLoaded", function() {
+//   defaultPlotly();
+// });
