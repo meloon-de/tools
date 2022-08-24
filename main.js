@@ -1,5 +1,9 @@
 var gHubLink = 'https://raw.githubusercontent.com/meloon-de/tools/main/raman/2022-07-15/G-P-3s_D1_pos1.txt';
+var driveLink = '10gJIOBaI6qKrfv9XaaOCygIgSTif-RkV';
+var ramanLink = '1wceN8W0tMZKIcuzq2f7Ij4xPaluEp8EV';
 
+var tempData = [];
+var max = 0;
 
 // defaultPlotly();
 
@@ -10,36 +14,50 @@ async function handleSearchRamanClick(){
 }
 
 async function handleUpdateRamanClick(){
-  var data = [];
+  // var data = [];
+  // var ProgressBar = require('node_modules\progressbar.js');
+  var bar = new ProgressBar.Line('#progressBar', {easing: 'easeInOut'});
 
   //get directory id from select
   var select = document.getElementById('ramanSelect');
   var selectValue = select.options[select.selectedIndex].value;
-  console.log("get value from select" + selectValue + " - success");
+  console.log("get value from select: " + selectValue + " - success");
+  bar.animate(0.2);
 
   //searches files under directory and adds name and id to array
-  files = await searchFile(selectValue);
-  files = files.result.files;
+  res = await searchFile(selectValue);
+  console.log("searchFile results: "+ res);
+  files = res.result.files;
+  console.log("files results: "+ files);
   for (let i in files){
     let dat = {
-      "id": files[i].id,
-      "name": files[i].name,
       "x": [],
       "y": [], 
-      "type": 'scatter',
+      "mode": 'scatter',
+      "name": files[i].name,
+      "id": files[i].id,
     };
-    data.push(dat);
+    tempData.push(dat);
+    console.log("plot: " + files[i].name + " and " + dat);
     console.log(files[i].name + " array push - success");
   }
-  console.log("file search under chosen directory - success");
+  console.log("file search under chosen directory and push - success");
+  bar.animate(0.4);
+
+  //sort file alphabetically for easier plotting
+  //https://stackoverflow.com/questions/1129216/sort-array-of-objects-by-string-property-value?page=1&tab=trending#tab-top
+  tempData.sort((a,b) => (a.name > b.name) ? 1 : ((b.name> a.name) ? -1 : 0));
 
   //downloads files and stores xy value to array
-  for (let i in data){
-    data = downloadAndParse(data, data[i].id);
-    console.log("download for" + data[i].name + " - success");
+  for (let i in tempData){
+    data = await downloadAndParse(tempData, tempData[i].id, i);
+    // console.log("download for" + data[i].name + " - success");
+    bar.animate(0.4 + (0.5*(i/tempData.length)));
   }
+  console.log(tempData);
 
-  usePlotly(data);
+  usePlotly(tempData);
+  bar.animate(1);
 }
 
 function generateSelectFromResult(res){
@@ -90,6 +108,8 @@ function defaultPlotly(){
   console.log("plotly plot - success");
 }
 
+var max;
+
 function usePlotly(objArray){
 //generate plots from object that contains name, xy arrays
   //PLOTLY
@@ -97,11 +117,13 @@ function usePlotly(objArray){
 
 
   // Define Data
-  var data = [objArrayj];
+  var data = objArray;
 
   //Getting max value for height of highlights
-  var max = Math.max(...objArray.map(o => o.y));
-  console.log("determine max - success");
+  // var max = Math.max(...objArray.map(o => o.y));
+  // max = Math.max(...objArray.map(o => o.y));
+  // max = Math.max.apply(Math, objArray.map(function(o) { return o.y; }));
+  // console.log("determine max - success");
 
   // Define Layout
   var layout = {
@@ -148,6 +170,7 @@ function usePlotly(objArray){
                 'width': 0,
             }
         }
+
     ],
     annotations: [
     {
@@ -179,15 +202,18 @@ function usePlotly(objArray){
     //yaxis: {range: [50, 100], title: "Intensity (counts)"},
     xaxis: {range: [1000, 3000], title: "Raman Shift (cm<sup>-1</sup>)"},
     yaxis: {title: "Intensity (counts)"},
-    title: "Raman Spectra"
+    title: "Raman Spectra",
+    legend: {traceorder: "normal"},
   };
 
   RAMANDIV = document.getElementById('raman');
-  Plotly.newPlot(RAMANDIV, data, layout);
+  Plotly.newPlot(RAMANDIV, data, layout, {displaylogo: false});
   console.log("plotly plot - success");
 }
 
-async function downloadAndParse(objArray, fileID){
+async function downloadAndParse(objArray, fileID, index){
+//also searches for max
+
     // text = await useGithubFetch(gHubLink);
     text = await downloadFile(fileID);
     text = text.body;
@@ -196,8 +222,11 @@ async function downloadAndParse(objArray, fileID){
     var lines = text.split('\n');
     for(var line = 0; line < lines.length; line++){
         var lin = lines[line].split('\t');
-        //filters out NaN of file at the end which gives error to Math.max
+        //filters out NaN of file which gives error to Math.max
         if (isNaN(lin[1])) {
+          continue;
+        }
+        if (isNaN(lin[0])) {
           continue;
         }
         x.push(lin[0]);
@@ -216,12 +245,23 @@ async function downloadAndParse(objArray, fileID){
     });
     console.log("convert to number - success");
 
-    for (let i in objArray){
-      objArray[i].x = xn;
-      objArray[i].y = yn;
-      console.log("X: " + objArray[i].x);
-      console.log("Y: " + objArray[i].x);
+    //find max
+    for (let i in xn){
+      if (xn[i] > max){
+        max = xn[i];
+      }
     }
+    for (let i in yn){
+      if (yn[i] > max){
+        max = yn[i];
+      }
+    }
+
+    objArray[index].x = xn;
+    objArray[index].y = yn;
+    // console.log("X: " + objArray[i].x);
+    // console.log("Y: " + objArray[i].x);
+    console.log("push to array - success");
 
     return objArray;
 }
@@ -237,7 +277,7 @@ async function useGithubFetch(gHubLink){
   }
 }
 
-async function downloadFile(realFileId) {
+async function downloadFile(fileId) {
 /**
  * Downloads a file
  * @param{string} realFileId file ID
@@ -252,8 +292,6 @@ async function downloadFile(realFileId) {
   const auth = new GoogleAuth({scopes: 'https://www.googleapis.com/auth/drive'});
   const service = google.drive({version: 'v3', auth});
   */
-
-  fileId = realFileId;
   try {
     // const file = await service.files.get({
     // response = await gapi.client.drive.files.list({
@@ -262,10 +300,10 @@ async function downloadFile(realFileId) {
       alt: 'media',
       fields: 'name',
     });
-    console.log("file download success");
+    console.log("file download " + fileId + " - success");
     return file;
   } catch (err) {
-      console.log("Error getting the file");
+      console.log("Error getting " + fileId);
     throw err;
   }
 }
@@ -275,7 +313,6 @@ async function searchFolder(fileID) {
  * Search file in drive location
  * @return{obj} data file
  * */
-  fileID = ramanLink;
   try {
     const res = await gapi.client.drive.files.list({
       q: `mimeType = 'application/vnd.google-apps.folder' and '${fileID}' in parents`,
@@ -296,7 +333,6 @@ async function searchFile(fileID) {
  * Search file in drive location
  * @return{obj} data file
  * */
-  fileID = ramanLink;
   try {
     const res = await gapi.client.drive.files.list({
       q: `'${fileID}' in parents`,
@@ -318,6 +354,8 @@ async function searchFile(fileID) {
 /* exported handleAuthClick */
 /* exported handleSignoutClick */
 
+const CLIENT_ID = '1022701359156-t372td2fbje06vbla2ejs60t68sdvhn7.apps.googleusercontent.com';
+const API_KEY = 'AIzaSyDPnLit3eqBVMxMLxH3HYcXVKFdnO8MD0A';
 
 // Discovery doc URL for APIs used by the quickstart
 const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest';
@@ -387,7 +425,7 @@ function handleAuthClick() {
     }
     document.getElementById('signout_button').style.visibility = 'visible';
     document.getElementById('authorize_button').innerText = 'Refresh';
-    await listFiles();
+    // await listFiles();
   };
 
   if (gapi.client.getToken() === null) {
