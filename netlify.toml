@@ -1,0 +1,4 @@
+[[plugins]]
+package = "netlify-plugin-inline-functions-env"
+    [plugins.inputs]
+    include = ["API_KEY", "CLIENT_ID", "RAMANLINK" ]
