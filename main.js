@@ -2,7 +2,11 @@ var gHubLink = 'https://raw.githubusercontent.com/meloon-de/tools/main/raman/202
 var tempData = [];
 var max = 0;
 
-defaultPlotly()
+RAMANLINK = process.env.RAMANLINK;
+API_KEY = process.env.API_KEY;
+CLIENT_ID = process.env.CLIENT_ID;
+
+defaultPlotly();
 
 async function handleSearchRamanClick(){
   res = await searchFolder(RAMANLINK);
