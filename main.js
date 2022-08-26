@@ -69,6 +69,11 @@ function generateSelectFromResult(res){
   // selectList.id="ramanSelect";
   // parent.appendChild(selectList);
 
+  //cleans up old search
+  while (parent.firstChild) {
+        parent.removeChild(parent.firstChild);
+  }
+
   for (let i in folders){
     var option = document.createElement("option");
     option.value = folders[i].id;
