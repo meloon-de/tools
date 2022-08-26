@@ -1,4 +1,4 @@
-var gHubLink = 'https://raw.githubusercontent.com/meloon-de/tools/main/raman/2022-07-15/G-P-3s_D1_pos1.txt';
+var gHubLink = 'https://raw.githubusercontent.com/meloon-de/tools/main/raman/graphene.dat';
 var tempData = [];
 var max = 0;
 
@@ -127,6 +127,7 @@ async function defaultPlotly(){
     autosize:true,
     xaxis: {range: [1000, 3000], title: "Raman Shift (cm<sup>-1</sup>)"},
     yaxis: {title: "Intensity (counts)"},
+    title: "Standard Graphene Raman Spectra",
   };
 
   RAMANDIV = document.getElementById('raman');
