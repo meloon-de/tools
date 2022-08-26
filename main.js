@@ -1,4 +1,4 @@
-var gHubLink = 'https://raw.githubusercontent.com/meloon-de/tools/main/raman/graphene.dat';
+var gHubLink = 'https://raw.githubusercontent.com/meloon-de/tools/main/raman/graphene.txt';
 var tempData = [];
 var max = 0;
 
