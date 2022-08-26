@@ -1,4 +1,5 @@
-var gHubLink = 'https://raw.githubusercontent.com/meloon-de/tools/main/raman/graphene.txt';
+var gHubLink = 'https://raw.githubusercontent.com/meloon-de/tools/main/raman/default/slg.txt';
+var ramanFile = 'raman/default/slg.txt';
 var tempData = [];
 var max = 0;
 
@@ -124,10 +125,81 @@ async function defaultPlotly(){
   var data = [sample];
 
   var layout = {
-    autosize:true,
+    shapes: [
+        {
+            'type': 'rect',
+            'xref': 'xaxis',
+            'yref': 'yaxis',
+            'x0': '1300',
+            'y0': 0,
+            'x1': '1400',
+            'y1': 15000,
+            'fillcolor': 'yellow',
+            'opacity': 0.2,
+            'line': {
+                'width': 0,
+            }
+        },
+        {
+            'type': 'rect',
+            'xref': 'xaxis',
+            'yref': 'yaxis',
+            'x0': '1500',
+            'y0': 0,
+            'x1': '1700',
+            'y1': 15000,
+            'fillcolor': 'blue',
+            'opacity': 0.2,
+            'line': {
+                'width': 0,
+            }
+        },
+        {
+            'type': 'rect',
+            'xref': 'xaxis',
+            'yref': 'yaxis',
+            'x0': '2550',
+            'y0': 0,
+            'x1': '3000',
+            'y1': 15000,
+            'fillcolor': 'purple',
+            'opacity': 0.2,
+            'line': {
+                'width': 0,
+            }
+        }
+
+    ],
+    annotations: [
+    {
+      x: 1350,
+      y: 5,
+      xref: 'x',
+      yref: 'y',
+      text: 'D',
+      showarrow: false,
+    },
+    {
+      x: 1600,
+      y: 5,
+      xref: 'x',
+      yref: 'y',
+      text: 'G',
+      showarrow: false,
+    },
+    {
+      x: 2775,
+      y: 5,
+      xref: 'x',
+      yref: 'y',
+      text: '2D',
+      showarrow: false,
+    },
+    ],
+    // autosize:true,
     xaxis: {range: [1000, 3000], title: "Raman Shift (cm<sup>-1</sup>)"},
-    yaxis: {title: "Intensity (counts)"},
-    title: "Standard Graphene Raman Spectra",
+    yaxis: {range: [0, 15000], title: "Intensity (counts)"},
+    title: "Standard Single Layer Graphene Raman Spectra",
   };
 
   RAMANDIV = document.getElementById('raman');
@@ -292,10 +364,21 @@ async function downloadAndParse(objArray, fileID, index){
     return objArray;
 }
 
-async function useGithubFetch(gHubLink){
+async function useFileFetch(link){
   // fetchs txt file, splts per line and splits columns to x & y
   try {
-    let data = await fetch(gHubLink);
+    let data = await fetch(link);
+    return await data.text();
+  } catch (error) {
+      console.log("failed file download" + error);
+      console.log(data.text());
+  }
+}
+
+async function useGithubFetch(link){
+  // fetchs txt file, splts per line and splits columns to x & y
+  try {
+    let data = await fetch(link);
     return await data.text();
   } catch (error) {
       console.log("failed file download" + error);

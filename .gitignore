@@ -3,5 +3,4 @@ credentials.js
 node_modules/.bin
 node_modules/browserlist
 raman/*
-!raman/graphene.dat
-!raman/graphene.txt
+!raman/default
