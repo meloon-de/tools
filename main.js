@@ -2,6 +2,7 @@ var gHubLink = 'https://raw.githubusercontent.com/meloon-de/tools/main/raman/def
 var ramanFile = 'raman/default/slg.txt';
 var tempData = [];
 var max = 0;
+var layout;
 
 defaultPlotly();
 
@@ -14,7 +15,10 @@ async function handleSearchRamanClick(){
 async function handleUpdateRamanClick(){
   // var data = [];
   // var ProgressBar = require('node_modules\progressbar.js');
-  var bar = new ProgressBar.Line('#progressBar', {easing: 'easeInOut'});
+  var bar = new ProgressBar.Line('#progressBar', {
+    easing: 'easeInOut',
+    color: '#FFFFCC',
+  });
 
   //get directory id from select
   var select = document.getElementById('ramanSelect');
@@ -56,6 +60,7 @@ async function handleUpdateRamanClick(){
 
   usePlotly(tempData);
   bar.animate(1);
+  bar.destroy();
 }
 
 function generateSelectFromResult(res){
@@ -117,8 +122,8 @@ async function defaultPlotly(){
       yn.push(Number(str));
   });
   console.log("convert to number - success");
-  console.log(xn);
-  console.log(yn);
+  // console.log(xn);
+  // console.log(yn);
 
   var sample = {
     "x": xn,
@@ -129,7 +134,37 @@ async function defaultPlotly(){
 
   var data = [sample];
 
-  var layout = {
+  layout = updatePlotlyLayout();
+
+  RAMANDIV = document.getElementById('raman');
+  Plotly.newPlot(RAMANDIV, data, layout);
+  console.log("plotly plot - success");
+}
+
+function usePlotly(objArray){
+//generate plots from object that contains name, xy arrays
+  //PLOTLY
+  //https://plotly.com/javascript/shapes/
+
+
+  // Define Data
+  var data = objArray;
+
+  //Getting max value for height of highlights
+  // var max = Math.max(...objArray.map(o => o.y));
+  // max = Math.max(...objArray.map(o => o.y));
+  // max = Math.max.apply(Math, objArray.map(function(o) { return o.y; }));
+  // console.log("determine max - success");
+
+  layout = updatePlotlyLayout();
+
+  RAMANDIV = document.getElementById('raman');
+  Plotly.newPlot(RAMANDIV, data, layout, {displaylogo: false});
+  console.log("plotly plot - success");
+}
+
+function updatePlotlyLayout(){
+  layout = {
     shapes: [
         {
             'type': 'rect',
@@ -205,112 +240,9 @@ async function defaultPlotly(){
     xaxis: {range: [1000, 3000], title: "Raman Shift (cm<sup>-1</sup>)"},
     yaxis: {range: [0, 15000], title: "Intensity (counts)"},
     title: "Standard Single Layer Graphene Raman Spectra",
-  };
-
-  RAMANDIV = document.getElementById('raman');
-  Plotly.newPlot(RAMANDIV, data, layout);
-  console.log("plotly plot - success");
-}
-
-function usePlotly(objArray){
-//generate plots from object that contains name, xy arrays
-  //PLOTLY
-  //https://plotly.com/javascript/shapes/
-
-
-  // Define Data
-  var data = objArray;
-
-  //Getting max value for height of highlights
-  // var max = Math.max(...objArray.map(o => o.y));
-  // max = Math.max(...objArray.map(o => o.y));
-  // max = Math.max.apply(Math, objArray.map(function(o) { return o.y; }));
-  // console.log("determine max - success");
-
-  // Define Layout
-  var layout = {
-    shapes: [
-        {
-            'type': 'rect',
-            'xref': 'xaxis',
-            'yref': 'yaxis',
-            'x0': '1300',
-            'y0': 0,
-            'x1': '1400',
-            'y1': max + 20,
-            'fillcolor': 'yellow',
-            'opacity': 0.2,
-            'line': {
-                'width': 0,
-            }
-        },
-        {
-            'type': 'rect',
-            'xref': 'xaxis',
-            'yref': 'yaxis',
-            'x0': '1500',
-            'y0': 0,
-            'x1': '1700',
-            'y1': max + 20,
-            'fillcolor': 'blue',
-            'opacity': 0.2,
-            'line': {
-                'width': 0,
-            }
-        },
-        {
-            'type': 'rect',
-            'xref': 'xaxis',
-            'yref': 'yaxis',
-            'x0': '2550',
-            'y0': 0,
-            'x1': '3000',
-            'y1': max + 20,
-            'fillcolor': 'purple',
-            'opacity': 0.2,
-            'line': {
-                'width': 0,
-            }
-        }
-
-    ],
-    annotations: [
-    {
-      x: 1350,
-      y: 5,
-      xref: 'x',
-      yref: 'y',
-      text: 'D',
-      showarrow: false,
-    },
-    {
-      x: 1600,
-      y: 5,
-      xref: 'x',
-      yref: 'y',
-      text: 'G',
-      showarrow: false,
-    },
-    {
-      x: 2775,
-      y: 5,
-      xref: 'x',
-      yref: 'y',
-      text: '2D',
-      showarrow: false,
-    },
-    ],
-    autosize:true,
-    //yaxis: {range: [50, 100], title: "Intensity (counts)"},
-    xaxis: {range: [1000, 3000], title: "Raman Shift (cm<sup>-1</sup>)"},
-    yaxis: {title: "Intensity (counts)"},
-    title: "Raman Spectra",
     legend: {traceorder: "normal"},
   };
-
-  RAMANDIV = document.getElementById('raman');
-  Plotly.newPlot(RAMANDIV, data, layout, {displaylogo: false});
-  console.log("plotly plot - success");
+  return layout;
 }
 
 async function downloadAndParse(objArray, fileID, index){
