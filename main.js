@@ -3,8 +3,22 @@ var ramanFile = 'raman/default/slg.txt';
 var tempData = [];
 var max = 0;
 var layout;
+var tempTwoDPeak= 0;
+var tempGPeak = 0;
+var tempDPeak = 0;
+var ramanText;
 
+//TODO
+//Remove bar when pressing 'Update Graph' again
+
+/****************************************
+  VIEW
+****************************************/
 defaultPlotly();
+
+/****************************************
+  Click Handling
+****************************************/
 
 async function handleSearchRamanClick(){
   res = await searchFolder(RAMANLINK);
@@ -50,11 +64,19 @@ async function handleUpdateRamanClick(){
   //https://stackoverflow.com/questions/1129216/sort-array-of-objects-by-string-property-value?page=1&tab=trending#tab-top
   tempData.sort((a,b) => (a.name > b.name) ? 1 : ((b.name> a.name) ? -1 : 0));
 
-  //downloads files and stores xy value to array
+  //downloads files and stores values to array
   for (let i in tempData){
     data = await downloadAndParse(tempData, tempData[i].id, i);
     // console.log("download for" + data[i].name + " - success");
     bar.animate(0.4 + (0.5*(i/tempData.length)));
+
+    //Output D, G, 2D, ID/IG & approximate Layer thickness
+    var valIDIG = tempData[i].DPeak/tempData[i].GPeak;
+    valIDIG = valIDIG.toFixed(2);
+    var valI2DIG = tempData[i].TwoDPeak/tempData[i].GPeak;
+    valI2DIG = valI2DIG.toFixed(2);
+    // tempData[i].name = tempData[i].name + ",D: " + tempData[i].DPeak + ",G: " + tempData[i].GPeak +  ",2D: " + tempData[i].TwoDPeak + ", ID/IG: " + valIDIG;
+    tempData[i].name = tempData[i].name + ", ID/IG: " + valIDIG + ", I2D/IG: " + valI2DIG;
   }
   console.log(tempData);
 
@@ -89,6 +111,51 @@ function generateSelectFromResult(res){
   }
 }
 
+/**
+ *  Sign in the user upon button click.
+ *  Edited for Raman Search
+ */
+function handleAuthClick() {
+  tokenClient.callback = async (resp) => {
+    if (resp.error !== undefined) {
+      throw (resp);
+    }
+    document.getElementById('signout_button').style.visibility = 'visible';
+    document.getElementById('authorize_button').innerText = 'Refresh';
+    // await listFiles();
+  };
+
+  if (gapi.client.getToken() === null) {
+    // Prompt the user to select a Google Account and ask for consent to share their data
+    // when establishing a new session.
+    tokenClient.requestAccessToken({prompt: 'consent'});
+  } else {
+    // Skip display of account chooser and consent dialog for an existing session.
+    tokenClient.requestAccessToken({prompt: ''});
+  }
+}
+
+/**
+ *  Sign out the user upon button click.
+ */
+function handleSignoutClick() {
+  const token = gapi.client.getToken();
+  if (token !== null) {
+    google.accounts.oauth2.revoke(token.access_token);
+    gapi.client.setToken('');
+    document.getElementById('content').innerText = '';
+    document.getElementById('authorize_button').innerText = 'Authorize';
+    document.getElementById('signout_button').style.visibility = 'hidden';
+  }
+}
+
+/****************************************
+  Plotting
+****************************************/
+
+/**
+ * The default plot when the site opens
+ */
 async function defaultPlotly(){
   // Define Data
 
@@ -217,6 +284,7 @@ function updatePlotlyLayout(){
       xref: 'x',
       yref: 'y',
       text: 'D',
+      yshift: -15,
       showarrow: false,
     },
     {
@@ -225,6 +293,7 @@ function updatePlotlyLayout(){
       xref: 'x',
       yref: 'y',
       text: 'G',
+      yshift: -15,
       showarrow: false,
     },
     {
@@ -233,17 +302,28 @@ function updatePlotlyLayout(){
       xref: 'x',
       yref: 'y',
       text: '2D',
+      yshift: -3,
       showarrow: false,
     },
     ],
-    // autosize:true,
+    autosize:true,
     xaxis: {range: [1000, 3000], title: "Raman Shift (cm<sup>-1</sup>)"},
     yaxis: {range: [0, 15000], title: "Intensity (counts)"},
-    title: "Standard Single Layer Graphene Raman Spectra",
-    legend: {traceorder: "normal"},
+    title: "Graphene Raman Spectra",
+    legend: {traceorder: "normal", 
+             yanchor: "top",
+             y: -1,
+             xanchor: "left",
+             x: 0.01
+             },
   };
   return layout;
 }
+
+
+/****************************************
+  Fetch & API Calls
+****************************************/
 
 async function downloadAndParse(objArray, fileID, index){
 //downloads and parses Gdrive files using an array of objects, ID and index of 
@@ -292,8 +372,44 @@ async function downloadAndParse(objArray, fileID, index){
       }
     }
 
+    tempDPeak = 0;
+    tempGPeak = 0;
+    tempTwoDPeak = 0;
+
+    //find D peak
+    for (let i in yn){
+      if (xn[i] > 1320 && yn[i] > tempDPeak && xn[i] < 1380){
+        tempDPeak = yn[i];
+      }
+    }
+    //find G peak
+    for (let i in yn){
+      if (xn[i] > 1550 && yn[i] > tempGPeak && xn[i] < 1650){
+        tempGPeak = yn[i];
+      }
+    }
+    //find 2D peak
+    for (let i in yn){
+      if (xn[i] > 2600 && yn[i] > tempTwoDPeak && xn[i] < 2750){
+        tempTwoDPeak= yn[i];
+      }
+    }
+
     objArray[index].x = xn;
     objArray[index].y = yn;
+    objArray[index].DPeak = tempDPeak.toFixed(2);
+    objArray[index].GPeak = tempGPeak.toFixed(2);
+    objArray[index].TwoDPeak = tempTwoDPeak.toFixed(2);
+
+    //Attempt at outputting D, G, 2D, IDIG
+    /*
+    var ramanText = "Name: " + fileID + ", D: " + objArray[index].DPeak + ", G: " + objArray[i].GPeak +  ", 2D: " + objArray[index].TwoDPeak + ", $I_D/I_G$: " + objArray[index].DPeak/objArray[index].GPeak + "\n";
+    console.log(ramanText);
+    var textDiv = document.getElementById('textOutput');
+    var content = document.createTextNode(ramanText);
+    textDiv.appendChild(content);
+    */
+
     // console.log("X: " + objArray[i].x);
     // console.log("Y: " + objArray[i].x);
     console.log("push to array - success");
@@ -394,7 +510,11 @@ async function searchFile(fileID) {
   }
 }
 
-//GOOGLE API AUTH
+
+/****************************************
+  GOOGLE API AUTH
+****************************************/
+
 /* exported gapiLoaded */
 /* exported gisLoaded */
 /* exported handleAuthClick */
@@ -456,75 +576,3 @@ function maybeEnableButtons() {
     document.getElementById('authorize_button').style.visibility = 'visible';
   }
 }
-
-/**
- *  Sign in the user upon button click.
- */
-//EDITED FOR RAMAN SEARCH
-function handleAuthClick() {
-  tokenClient.callback = async (resp) => {
-    if (resp.error !== undefined) {
-      throw (resp);
-    }
-    document.getElementById('signout_button').style.visibility = 'visible';
-    document.getElementById('authorize_button').innerText = 'Refresh';
-    // await listFiles();
-  };
-
-  if (gapi.client.getToken() === null) {
-    // Prompt the user to select a Google Account and ask for consent to share their data
-    // when establishing a new session.
-    tokenClient.requestAccessToken({prompt: 'consent'});
-  } else {
-    // Skip display of account chooser and consent dialog for an existing session.
-    tokenClient.requestAccessToken({prompt: ''});
-  }
-}
-
-/**
- *  Sign out the user upon button click.
- */
-function handleSignoutClick() {
-  const token = gapi.client.getToken();
-  if (token !== null) {
-    google.accounts.oauth2.revoke(token.access_token);
-    gapi.client.setToken('');
-    document.getElementById('content').innerText = '';
-    document.getElementById('authorize_button').innerText = 'Authorize';
-    document.getElementById('signout_button').style.visibility = 'hidden';
-  }
-}
-
-/**
- * Print metadata for first 10 files.
- */
-async function listFiles() {
-  let response;
-  try {
-    response = await gapi.client.drive.files.list({
-      'pageSize': 10,
-      'fields': 'files(id, name)',
-    });
-  } catch (err) {
-    document.getElementById('content').innerText = err.message;
-    return;
-  }
-  const files = response.result.files;
-  if (!files || files.length == 0) {
-    document.getElementById('content').innerText = 'No files found.';
-    return;
-  }
-  // Flatten to string to display
-  const output = files.reduce(
-      (str, file) => `${str}${file.name} (${file.id}\n`,
-      'Files:\n');
-  document.getElementById('content').innerText = output;
-}
-
-// window.onload = function(){
-  // defaultPlotly();
-// };
-
-// document.addEventListener("DOMContentLoaded", function() {
-//   defaultPlotly();
-// });
